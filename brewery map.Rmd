@@ -1,0 +1,65 @@
+---
+title: "Brewery"
+author: "Liwen Li"
+date: "2/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## US Beer Breweiries Map with Leaflet
+
+It was one of when wonderful friday night when I walked into a local beer shop called "101 Bottles of Beer on the Wall". I did not actually make effort to count how many bottles of beer were actually on the wall. They indeed have A LOT of different kinds of beers. And that made me wonder how many companies are making draft beers in United States. Then I found a data set made available on Kaggle by [__Brett Kurzawa__](http://kaggle.com/brkurzawa/usbreweries), and here is map of all breweries.
+
+```{r}
+pacman::p_load(
+  uszipcodes,
+  leaflet,
+  stringr,
+  dplyr,
+  htmltools
+)
+```
+
+I created the package _uszipcodes_ and it is available in my [_github_](https://github.com/li-wen-li/uszipcodes). It includes zip code location data and some functions to clean data.
+
+```{r}
+beers <- read.csv("~/Downloads/breweries_us.csv")
+colnames(beers)
+raw_zip <- get_zip(beers$address)
+sum(contain_letter(raw_zip))
+beers$Zip <- as.integer(clean_zip(raw_zip))
+beer_location <- inner_join(beers, zip_table[ , c(1,4,5)])
+```
+
+```{r}
+content <- paste(sep = "\n",
+                 beer_location$brewery_name,
+                 beer_location$website
+)
+
+beer_icon <- makeIcon(
+  iconUrl = "~/Downloads/beer.png",
+  iconWidth = 28, iconHeight = 30,
+  iconAnchorX = 0, iconAnchorY = 0
+)
+
+beer_map <- leaflet(beer_location) %>%
+  setView(lng = -98.583, lat = 39.833, zoom = 4) %>% 
+  addTiles() %>% 
+  addProviderTiles(providers$Wikimedia) %>% 
+  addMarkers(lng = beer_location$Longitude, lat = beer_location$Latitude,
+    clusterOptions = markerClusterOptions(),
+    popup = htmlEscape(content),
+    icon = beer_icon
+  )
+
+```
+
+```{r}
+beer_map
+```
+
+## Cheers!
