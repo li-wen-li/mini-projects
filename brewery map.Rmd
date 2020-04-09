@@ -23,7 +23,7 @@ pacman::p_load(
 )
 ```
 
-I created the package _uszipcodes_ and it is available in my [_github_](https://github.com/li-wen-li/uszipcodes). It includes zip code location data and some functions to clean data.
+I created the package _uszipcodes_ and it is available in my [_github_](https://github.com/li-wen-li/uszipcodes). It includes zip code location data and some handy functions to clean data.
 
 ```{r}
 beers <- read.csv("~/Downloads/breweries_us.csv")
@@ -35,10 +35,8 @@ beer_location <- inner_join(beers, zip_table[ , c(1,4,5)])
 ```
 
 ```{r}
-content <- paste(sep = "\n",
-                 beer_location$brewery_name,
-                 beer_location$website
-)
+content <- beer_location %>%
+                    mutate(popup = paste0('<a href =', beer_location$website, '>', beer_location$brewery_name, '</a>'))
 
 beer_icon <- makeIcon(
   iconUrl = "~/Downloads/beer.png",
@@ -52,7 +50,7 @@ beer_map <- leaflet(beer_location) %>%
   addProviderTiles(providers$Wikimedia) %>% 
   addMarkers(lng = beer_location$Longitude, lat = beer_location$Latitude,
     clusterOptions = markerClusterOptions(),
-    popup = htmlEscape(content),
+    popup = content$popup,
     icon = beer_icon
   )
 
@@ -63,3 +61,5 @@ beer_map
 ```
 
 ## Cheers!
+
+install_github("li-wen-li/uszipcodes")
