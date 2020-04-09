@@ -14,10 +14,8 @@ beer_location <- inner_join(beers, zip_table[ , c(1,4,5)])
 
 
 
-content <- paste(sep = "\n",
-                 beer_location$brewery_name,
-                 beer_location$website
-)
+content <- beer_location %>%
+  mutate(popup = paste0('<a href =', beer_location$website, '>', beer_location$brewery_name, '</a>'))
 
 beer_icon <- makeIcon(
   iconUrl = "~/Downloads/beer.png",
@@ -29,10 +27,9 @@ beer_map <- leaflet(beer_location) %>%
   setView(lng = -98.583, lat = 39.833, zoom = 4) %>% 
   addTiles() %>% 
   addProviderTiles(providers$Wikimedia) %>% 
-  addMarkers(
-    clusterOptions = markerClusterOptions(),
-    popup = htmlEscape(content),
-    icon = beer_icon
+  addMarkers(lng = beer_location$Longitude, lat = beer_location$Latitude,
+             clusterOptions = markerClusterOptions(),
+             popup = content$popup,
+             icon = beer_icon
   )
-
 
